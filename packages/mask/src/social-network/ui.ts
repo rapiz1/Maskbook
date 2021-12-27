@@ -1,7 +1,7 @@
 import '../utils/debug/general'
 import '../utils/debug/ui'
 import Services from '../extension/service'
-import { untilDomLoaded } from '../utils/dom'
+import { untilDomLoaded } from '@masknet/utils'
 import { Flags, InMemoryStorages, PersistentStorages } from '../../shared'
 import i18nNextInstance from '../../shared-ui/locales_legacy'
 import type { SocialNetworkUI } from './types'

@@ -1,6 +1,6 @@
 import { ProfileIdentifier } from '@masknet/shared-base'
+import { memoizePromise } from '@masknet/utils'
 import { queryAvatarDB, isAvatarOutdatedDB, storeAvatarDB, IdentifierWithAvatar, createAvatarDBAccess } from './db'
-import { memoizePromise } from '../../../utils-pure'
 import { MaskMessages } from '../../../shared'
 import { blobToDataURL } from '@dimensiondev/kit'
 import { createTransaction } from '../utils/openDB'

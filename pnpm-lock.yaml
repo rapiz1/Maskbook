@@ -142,6 +142,7 @@ importers:
       '@masknet/shared-base': workspace:*
       '@masknet/storybook-shared': workspace:*
       '@masknet/theme': workspace:*
+      '@masknet/utils': workspace:*
       '@masknet/web3-shared-base': workspace:*
       '@masknet/web3-shared-evm': workspace:*
       '@msgpack/msgpack': ^2.7.2
@@ -196,6 +197,7 @@ importers:
       '@masknet/shared-base': link:../shared-base
       '@masknet/storybook-shared': link:../storybook-shared
       '@masknet/theme': link:../theme
+      '@masknet/utils': link:../utils
       '@masknet/web3-shared-base': link:../web3-shared/base
       '@masknet/web3-shared-evm': link:../web3-shared/evm
       '@msgpack/msgpack': 2.7.2
@@ -320,6 +322,7 @@ importers:
       '@masknet/shared': workspace:*
       '@masknet/shared-base': workspace:*
       '@masknet/theme': workspace:*
+      '@masknet/utils': workspace:*
       '@masknet/web3-contracts': workspace:*
       '@masknet/web3-providers': workspace:*
       '@masknet/web3-shared-base': workspace:*
@@ -456,6 +459,7 @@ importers:
       '@masknet/shared': link:../shared
       '@masknet/shared-base': link:../shared-base
       '@masknet/theme': link:../theme
+      '@masknet/utils': link:../utils
       '@masknet/web3-contracts': link:../web3-contracts
       '@masknet/web3-providers': link:../web3-providers
       '@masknet/web3-shared-base': link:../web3-shared/base
@@ -741,6 +745,7 @@ importers:
       '@masknet/shared': workspace:*
       '@masknet/shared-base': workspace:*
       '@masknet/theme': workspace:*
+      '@masknet/utils': workspace:*
       '@masknet/web3-providers': workspace:*
       '@masknet/web3-shared-base': workspace:*
       '@masknet/web3-shared-evm': workspace:*
@@ -755,6 +760,7 @@ importers:
       '@masknet/shared': link:../../shared
       '@masknet/shared-base': link:../../shared-base
       '@masknet/theme': link:../../theme
+      '@masknet/utils': link:../../utils
       '@masknet/web3-providers': link:../../web3-providers
       '@masknet/web3-shared-base': link:../../web3-shared/base
       '@masknet/web3-shared-evm': link:../../web3-shared/evm
@@ -1083,6 +1089,12 @@ importers:
       '@storybook/react': 6.4.18_b824aaa144c344b0886eeabad621db2e
       babel-loader: 8.2.3_900eac683bef8a6b239b47efcf24e8a9
 
+  packages/utils:
+    specifiers:
+      lodash-unified: 1.0.1
+    dependencies:
+      lodash-unified: 1.0.1_da03a4540fbd16bbaafbb96724306afd
+
   packages/web3-constants:
     specifiers: {}
 
@@ -1153,6 +1165,7 @@ importers:
     specifiers:
       '@ensdomains/address-encoder': ^0.2.6
       '@masknet/shared-base': workspace:*
+      '@masknet/utils': workspace:*
       '@masknet/web3-constants': workspace:*
       '@masknet/web3-contracts': workspace:*
       '@masknet/web3-shared-base': workspace:*
@@ -1176,6 +1189,7 @@ importers:
     dependencies:
       '@ensdomains/address-encoder': 0.2.6
       '@masknet/shared-base': link:../../shared-base
+      '@masknet/utils': link:../../utils
       '@masknet/web3-constants': link:../../web3-constants
       '@masknet/web3-contracts': link:../../web3-contracts
       '@masknet/web3-shared-base': link:../base
