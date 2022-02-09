@@ -2,7 +2,10 @@ import type { RequestArguments } from 'web3-core'
 import type { RequestOptions, SendOverrides } from '@masknet/web3-shared-evm'
 import { currentChainIdSettings, currentProviderSettings } from '../../../plugins/Wallet/settings'
 import { createProvider } from './provider'
-import { createContext, dispatch } from './composer'
+import { createContext, dispatch, use } from './composer'
+import { Logger } from './middlewares/Logger'
+
+use(new Logger())
 
 export async function sendRequest<T extends unknown>(
     requestArguments: RequestArguments,

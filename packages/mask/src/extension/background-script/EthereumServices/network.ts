@@ -223,4 +223,6 @@ export async function confirmRequest() {}
 
 export async function rejectRequest() {}
 
+export async function replaceRequest() {}
+
 export async function cancelRequest() {}
