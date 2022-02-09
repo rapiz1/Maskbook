@@ -194,7 +194,7 @@ export function Trader(props: TraderProps) {
     const pickToken = usePickToken()
     const onTokenChipClick = useCallback(
         async (panelType: TokenPanelType) => {
-            const token = await pickToken({
+            const picked = await pickToken({
                 chainId,
                 disableNativeToken: false,
                 selectedTokens: excludeTokens,
@@ -204,7 +204,7 @@ export function Trader(props: TraderProps) {
                     panelType === TokenPanelType.Input
                         ? AllProviderTradeActionType.UPDATE_INPUT_TOKEN
                         : AllProviderTradeActionType.UPDATE_OUTPUT_TOKEN,
-                token: token,
+                token: picked,
             })
         },
         [excludeTokens.join(), chainId],
