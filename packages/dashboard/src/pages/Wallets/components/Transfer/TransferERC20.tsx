@@ -41,7 +41,6 @@ export const TransferERC20 = memo<TransferERC20Props>(({ token }) => {
     const t = useDashboardI18N()
     const { NATIVE_TOKEN_ADDRESS } = useTokenConstants()
     const anchorEl = useRef<HTMLDivElement | null>(null)
-    const [id] = useState(uuid())
     const [amount, setAmount] = useState('')
     const [address, setAddress] = useState('')
     const [memo, setMemo] = useState('')
