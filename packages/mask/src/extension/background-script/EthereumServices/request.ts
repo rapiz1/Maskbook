@@ -5,9 +5,11 @@ import { createExternalProvider } from './provider'
 import { createContext, dispatch, use } from './composer'
 import { Logger } from './middlewares/Logger'
 import { Squash } from './middlewares/Squash'
+import { MaskWallet } from './middlewares/MaskWallet'
 
 use(new Logger())
 use(new Squash())
+use(new MaskWallet())
 
 export async function sendRequest<T extends unknown>(
     requestArguments: RequestArguments,

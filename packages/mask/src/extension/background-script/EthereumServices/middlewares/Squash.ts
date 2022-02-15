@@ -6,7 +6,7 @@ import { EthereumMethodType, SendOverrides } from '@masknet/web3-shared-evm'
 import type { Context, Middleware } from '../types'
 
 /**
- * Squash multiple RPC requests into a single request.
+ * Squash multiple RPC requests into a single one.
  */
 export class Squash implements Middleware<Context> {
     private cache = new Map<string, Promise<JsonRpcResponse | undefined>>()
