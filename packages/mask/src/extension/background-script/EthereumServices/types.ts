@@ -31,15 +31,32 @@ export interface Provider {
 }
 
 export interface Context {
-    readonly payload: JsonRpcPayload
-    readonly response: JsonRpcResponse | void
+    readonly sendOverrides: SendOverrides | undefined
+    readonly requestOptions: RequestOptions | undefined
+    readonly requestArguments: RequestArguments
+
+    /**
+     * JSON RPC rquest payload
+     */
+    readonly request: JsonRpcPayload
+
+    /**
+     * JSON RPC response object
+     */
+    readonly response: JsonRpcResponse | undefined
+
     result: unknown
     error: Error | null
-    readonly sendOverrides: SendOverrides | void
-    readonly requestOptions: RequestOptions | void
 
-    getResponse: (callback: (error: Error | null, response?: JsonRpcResponse) => void) => void
-    setResponse: (error: Error | null, response?: JsonRpcResponse) => void
+    /**
+     * Write RPC response into the context but only allow to call once.
+     */
+    write: (error: Error | null, response?: JsonRpcResponse) => void
+
+    /**
+     * Register a callback which will be called once the context is written with a response.
+     */
+    onResponse: (callback: (error: Error | null, response?: JsonRpcResponse) => void) => void
 }
 
 export interface Middleware<T> {

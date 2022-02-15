@@ -15,7 +15,7 @@ class Composer<T> {
                 index = i
                 let fn
                 if (i >= this.middlewares.length) fn = next
-                else fn = this.middlewares[i].fn
+                else fn = this.middlewares[i].fn.bind(this.middlewares[i])
                 if (!fn) return Promise.resolve()
                 try {
                     return Promise.resolve(fn(context, dispatch.bind(null, i + 1)))
@@ -47,12 +47,16 @@ class RequestContext implements Context {
     private callbacks: ((error: Error | null, response?: JsonRpcResponse) => void)[] = []
 
     constructor(
-        private requestArguments: RequestArguments,
-        private overrides?: SendOverrides,
-        private options?: RequestOptions,
+        private rawRequestArguments: RequestArguments,
+        private rawOverrides?: SendOverrides,
+        private rawOptions?: RequestOptions,
     ) {}
 
-    get payload() {
+    get requestArguments() {
+        return this.rawRequestArguments
+    }
+
+    get request() {
         return {
             id: this.id,
             jsonrpc: '2.0',
@@ -79,7 +83,6 @@ class RequestContext implements Context {
 
     set error(error: Error | null) {
         this.rawError = error
-        this.setResponse(this.rawError)
     }
 
     get result() {
@@ -88,31 +91,26 @@ class RequestContext implements Context {
 
     set result(result: unknown) {
         this.rawResult = result
-        this.setResponse(null, {
-            id: this.id,
-            jsonrpc: '2.0',
-            result: this.rawResult,
-        })
     }
 
     get sendOverrides() {
-        return this.overrides
+        return this.rawOverrides
     }
 
     get requestOptions() {
-        return this.options
+        return this.rawOptions
     }
 
-    getResponse(callback: (error: Error | null, response?: JsonRpcResponse) => void) {
-        this.callbacks.push(callback)
-    }
-
-    setResponse(error: Error | null, response?: JsonRpcResponse) {
+    write(error: Error | null, result?: unknown) {
         if (!this.writeable) return
         this.writeable = false
         this.error = error
-        this.result = response?.result
+        this.result = result
         this.callbacks.forEach((x) => x(this.error, this.response))
+    }
+
+    onResponse(callback: (error: Error | null, response?: JsonRpcResponse) => void) {
+        if (!this.callbacks.includes(callback)) this.callbacks.push(callback)
     }
 }
 

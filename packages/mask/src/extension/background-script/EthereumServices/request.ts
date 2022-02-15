@@ -4,8 +4,10 @@ import { currentChainIdSettings, currentProviderSettings } from '../../../plugin
 import { createExternalProvider } from './provider'
 import { createContext, dispatch, use } from './composer'
 import { Logger } from './middlewares/Logger'
+import { Squash } from './middlewares/Squash'
 
 use(new Logger())
+use(new Squash())
 
 export async function sendRequest<T extends unknown>(
     requestArguments: RequestArguments,
@@ -24,9 +26,10 @@ export async function sendRequest<T extends unknown>(
                 if (!externalProvider?.request) throw new Error('Failed to create provider.')
 
                 // send request and set result in the context
-                context.result = (await externalProvider?.request?.(requestArguments)) as T
+                const result = (await externalProvider?.request?.(requestArguments)) as T
+                context.write(null, result)
             } catch (error) {
-                context.error = error instanceof Error ? error : new Error('Failed to send request.')
+                context.write(error instanceof Error ? error : new Error('Failed to send request.'))
             }
         })
 

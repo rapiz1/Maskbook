@@ -15,11 +15,11 @@ const getProvider = createLookupTableResolver<ProviderType, Provider | null>(
         [ProviderType.MaskWallet]: new MaskWalletProvider(),
         [ProviderType.MetaMask]: new MetaMaskProvider(),
         [ProviderType.WalletConnect]: new WalletConnectProvider(),
-        [ProviderType.CustomNetwork]: new CustomNetworkProvider(),
         [ProviderType.Coin98]: new InjectedProvider(),
         [ProviderType.WalletLink]: new InjectedProvider(),
         [ProviderType.MathWallet]: new InjectedProvider(),
         [ProviderType.Fortmatic]: new FortmaticProvider(),
+        [ProviderType.CustomNetwork]: new CustomNetworkProvider(),
     },
     null,
 )
