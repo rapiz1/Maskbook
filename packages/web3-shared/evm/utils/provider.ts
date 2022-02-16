@@ -25,17 +25,17 @@ function getCacheId(requestArguments: RequestArguments, overrides?: SendOverride
     }
 }
 
-function createSquashedRequest<T extends unknown>(
+function createSquashedRequest<T>(
     request: <T>(requestArguments: RequestArguments, overrides?: SendOverrides, options?: RequestOptions) => Promise<T>,
 ) {
-    return async (requestArguments: RequestArguments, overrides?: SendOverrides, options?: RequestOptions) => {
+    return async <T>(requestArguments: RequestArguments, overrides?: SendOverrides, options?: RequestOptions) => {
         const id = getCacheId(requestArguments, overrides)
 
         // the request cannot be cached
         if (!id) return request<T>(requestArguments, overrides, options)
 
         // the request is already cached
-        if (cache.has(id)) return cache.get(id)
+        if (cache.has(id)) return cache.get(id) as Promise<T>
 
         // the request can be cached
         const unresolved = request<T>(requestArguments, overrides, options).finally(() => cache.delete(id))
@@ -45,11 +45,7 @@ function createSquashedRequest<T extends unknown>(
 }
 
 export function createExternalProvider(
-    request: <T extends unknown>(
-        requestArguments: RequestArguments,
-        overrides?: SendOverrides,
-        options?: RequestOptions,
-    ) => Promise<T>,
+    request: <T>(requestArguments: RequestArguments, overrides?: SendOverrides, options?: RequestOptions) => Promise<T>,
     getOverrides?: () => SendOverrides,
     getOptions?: () => RequestOptions,
 ) {
@@ -77,12 +73,8 @@ export function createExternalProvider(
     }
 
     return {
-        isMetaMask: false,
-        isMask: true,
-        isStatus: true,
-        host: '',
-        path: '',
-        request: (requestArguments: RequestArguments) => request_(requestArguments, getOverrides?.(), getOptions?.()),
+        request: <T>(requestArguments: RequestArguments) =>
+            request_<T>(requestArguments, getOverrides?.(), getOptions?.()),
         send,
         sendAsync: send,
     }

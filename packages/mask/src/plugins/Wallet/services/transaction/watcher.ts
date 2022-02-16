@@ -3,7 +3,14 @@ import type { TransactionReceipt } from 'web3-core'
 import type { JsonRpcPayload } from 'web3-core-helpers'
 import { WalletMessages } from '@masknet/plugin-wallet'
 import { Explorer } from '@masknet/web3-providers'
-import { ChainId, getExplorerConstants, isSameAddress, TransactionStateType } from '@masknet/web3-shared-evm'
+import {
+    ChainId,
+    getExplorerConstants,
+    getPayloadConfig,
+    getPayloadFrom,
+    isSameAddress,
+    TransactionStateType,
+} from '@masknet/web3-shared-evm'
 import * as EthereumService from '../../../../extension/background-script/EthereumService'
 import * as progress from './progress'
 import * as helpers from './helpers'
@@ -59,7 +66,7 @@ class Storage {
     public getWatchedAccounts(chainId: ChainId) {
         return uniqBy(
             this.getWatched(chainId)
-                .map(([_, transaction]) => helpers.getPayloadFrom(transaction.payload))
+                .map(([_, transaction]) => getPayloadFrom(transaction.payload))
                 .filter(Boolean) as string[],
             (x) => x.toLowerCase(),
         )
@@ -68,7 +75,7 @@ class Storage {
     public getUnwatchedAccounts(chainId: ChainId) {
         return uniqBy(
             this.getUnwatched(chainId)
-                .map(([_, transaction]) => helpers.getPayloadFrom(transaction.payload))
+                .map(([_, transaction]) => getPayloadFrom(transaction.payload))
                 .filter(Boolean) as string[],
             (x) => x.toLowerCase(),
         )
@@ -141,7 +148,7 @@ async function checkAccount(chainId: ChainId, account: string) {
                     return true
 
                 // the transaction nonce exact matched
-                const config = helpers.getPayloadConfig(transaction.payload)
+                const config = getPayloadConfig(transaction.payload)
                 if (!config) return false
                 return (
                     isSameAddress(latestTransaction.from, config.from as string) &&

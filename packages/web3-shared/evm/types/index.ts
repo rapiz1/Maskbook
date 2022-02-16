@@ -378,6 +378,11 @@ export type EthereumTransactionConfig = TransactionConfig_ & {
     // EIP1559
     maxFeePerGas?: string
     maxPriorityFeePerGas?: string
+
+    // CELO
+    feeCurrency?: string // address of the ERC20 contract to use to pay for gas and the gateway fee
+    gatewayFeeRecipient?: string // coinbase address of the full serving the light client's trasactions
+    gatewayFee?: string // value paid to the gateway fee recipient, denominated in the fee currency
 }
 
 // RPC need to be confirmed by the user

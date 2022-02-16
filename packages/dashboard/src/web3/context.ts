@@ -87,7 +87,7 @@ export const Web3Context: Web3ProviderType = {
     trustToken: PluginServices.Wallet.trustToken,
     blockToken: PluginServices.Wallet.blockToken,
 
-    request: Services.Ethereum.request,
+    request: Services.Ethereum.sendRequest,
 
     getAssetsList: PluginServices.Wallet.getAssetsList,
     getAssetsListNFT: PluginServices.Wallet.getAssetsListNFT,

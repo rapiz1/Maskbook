@@ -2,6 +2,29 @@ import { first } from 'lodash-unified'
 import type { JsonRpcPayload, JsonRpcResponse } from 'web3-core-helpers'
 import { EthereumMethodType, EthereumTransactionConfig } from '../types'
 
+export function createPayload(id: number, method: string, params: any[]) {
+    return {
+        id,
+        jsonrpc: '2.0',
+        method,
+        params,
+    }
+}
+
+export function getPayloadId(payload: JsonRpcPayload) {
+    return typeof payload.id === 'string' ? Number.parseInt(payload.id, 10) : payload.id
+}
+
+export function getPayloadFrom(payload: JsonRpcPayload) {
+    const config = getPayloadConfig(payload)
+    return config?.from as string | undefined
+}
+
+export function getPayloadTo(payload: JsonRpcPayload) {
+    const config = getPayloadConfig(payload)
+    return config?.to as string | undefined
+}
+
 export function getPayloadChainId(payload: JsonRpcPayload) {
     switch (payload.method) {
         // here are methods that contracts may emit
