@@ -1,6 +1,24 @@
-import type { RequestOptions, SendOverrides } from '@masknet/web3-shared-evm'
+import {
+    addGasMargin,
+    getPayloadChainId,
+    getPayloadConfig,
+    getPayloadFrom,
+    isEIP1559Supported,
+    RequestOptions,
+    SendOverrides,
+    ProviderType,
+} from '@masknet/web3-shared-evm'
 import type { RequestArguments } from 'web3-core'
 import type { JsonRpcResponse } from 'web3-core-helpers'
+import { toHex } from 'web3-utils'
+import { Flags } from '../../../../shared'
+import {
+    currentAccountSettings,
+    currentChainIdSettings,
+    currentMaskWalletAccountSettings,
+    currentMaskWalletChainIdSettings,
+    currentProviderSettings,
+} from '../../../plugins/Wallet/settings'
 import { getError, hasError } from './error'
 import type { Context, Middleware } from './types'
 
@@ -44,16 +62,70 @@ class RequestContext implements Context {
     private writeable = true
     private rawError: Error | null = null
     private rawResult: unknown
-    private callbacks: ((error: Error | null, response?: JsonRpcResponse) => void)[] = []
+    private rawAccount = currentAccountSettings.value
+    private rawChainId = currentChainIdSettings.value
+    private rawProviderType = currentProviderSettings.value
+    private responseCallbacks: ((error: Error | null, response?: JsonRpcResponse) => void)[] = []
 
     constructor(
         private rawRequestArguments: RequestArguments,
         private rawOverrides?: SendOverrides,
         private rawOptions?: RequestOptions,
-    ) {}
+    ) {
+        if (this.providerType === ProviderType.MaskWallet) {
+            this.rawAccount = currentMaskWalletAccountSettings.value
+            this.rawChainId = currentMaskWalletChainIdSettings.value
+        }
+    }
+
+    get account() {
+        return getPayloadFrom(this.request) ?? this.sendOverrides?.account ?? this.rawAccount
+    }
+
+    get chainId() {
+        return getPayloadChainId(this.request) ?? this.sendOverrides?.chainId ?? this.rawChainId
+    }
+
+    get providerType() {
+        return this.sendOverrides?.providerType ?? this.rawProviderType
+    }
+
+    get config() {
+        const config = {
+            ...getPayloadConfig(this.request),
+        }
+
+        // add gas margin
+        if (config.gas) config.gas = toHex(addGasMargin(config.gas as string).toFixed())
+
+        // add chain id
+        if (!config.chainId) config.chainId = this.chainId
+
+        // fix gas price
+        if (Flags.EIP1559_enabled && isEIP1559Supported(this.chainId)) {
+            delete config.gasPrice
+        } else {
+            delete config.maxFeePerGas
+            delete config.maxPriorityFeePerGas
+        }
+
+        return config
+    }
+
+    get sendOverrides() {
+        return this.rawOverrides
+    }
+
+    get requestOptions() {
+        return this.rawOptions
+    }
 
     get requestArguments() {
         return this.rawRequestArguments
+    }
+
+    set requestArguments(requestArguments: RequestArguments) {
+        this.rawRequestArguments = requestArguments
     }
 
     get request() {
@@ -67,6 +139,7 @@ class RequestContext implements Context {
 
     get response() {
         if (this.writeable) return
+        if (this.error) return
         return {
             id: this.id,
             jsonrpc: '2.0',
@@ -93,12 +166,12 @@ class RequestContext implements Context {
         this.rawResult = result
     }
 
-    get sendOverrides() {
-        return this.rawOverrides
+    abort(error: unknown, fallback = 'Failed to send transaction.') {
+        this.write(error instanceof Error ? error : new Error(fallback))
     }
 
-    get requestOptions() {
-        return this.rawOptions
+    end(result?: unknown) {
+        this.write(null, result)
     }
 
     write(error: Error | null, result?: unknown) {
@@ -106,11 +179,11 @@ class RequestContext implements Context {
         this.writeable = false
         this.error = error
         this.result = result
-        this.callbacks.forEach((x) => x(this.error, this.response))
+        this.responseCallbacks.forEach((x) => x(this.error, this.response))
     }
 
     onResponse(callback: (error: Error | null, response?: JsonRpcResponse) => void) {
-        if (!this.callbacks.includes(callback)) this.callbacks.push(callback)
+        if (!this.responseCallbacks.includes(callback)) this.responseCallbacks.push(callback)
     }
 }
 

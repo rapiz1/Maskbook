@@ -1,7 +1,7 @@
 import type { JsonRpcPayload, JsonRpcResponse } from 'web3-core-helpers'
-import type { Interceptor } from '../types'
+import type { Translator } from '../types'
 
-export class CeloInterceptor implements Interceptor {
+export class Celo implements Translator {
     encode(payload: JsonRpcPayload): JsonRpcPayload {
         throw new Error('Method not implemented.')
     }

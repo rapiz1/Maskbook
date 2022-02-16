@@ -1,7 +1,14 @@
 import type Web3 from 'web3'
 import type { HttpProvider, RequestArguments } from 'web3-core'
 import type { JsonRpcPayload, JsonRpcResponse } from 'web3-core-helpers'
-import type { ChainId, SendOverrides, RequestOptions, ExternalProvider } from '@masknet/web3-shared-evm'
+import type {
+    ChainId,
+    SendOverrides,
+    RequestOptions,
+    ExternalProvider,
+    ProviderType,
+    EthereumTransactionConfig,
+} from '@masknet/web3-shared-evm'
 
 export interface ProviderOptions {
     chainId?: ChainId
@@ -31,9 +38,12 @@ export interface Provider {
 }
 
 export interface Context {
+    readonly account: string
+    readonly chainId: ChainId
+    readonly providerType: ProviderType
+    readonly config: EthereumTransactionConfig | undefined
     readonly sendOverrides: SendOverrides | undefined
     readonly requestOptions: RequestOptions | undefined
-    readonly requestArguments: RequestArguments
 
     /**
      * JSON RPC rquest payload
@@ -45,13 +55,24 @@ export interface Context {
      */
     readonly response: JsonRpcResponse | undefined
 
+    requestArguments: RequestArguments
     result: unknown
     error: Error | null
 
     /**
+     * Alias of write(error)
+     */
+    abort: (error: unknown, fallback?: string) => void
+
+    /**
+     * Alias of write(null, result)
+     */
+    end: (result: unknown) => void
+
+    /**
      * Write RPC response into the context but only allow to call once.
      */
-    write: (error: Error | null, response?: JsonRpcResponse) => void
+    write: (error: Error | null, result?: unknown) => void
 
     /**
      * Register a callback which will be called once the context is written with a response.
@@ -63,7 +84,7 @@ export interface Middleware<T> {
     fn: (context: T, next: () => Promise<void>) => Promise<void>
 }
 
-export interface Interceptor {
+export interface Translator {
     encode?(payload: JsonRpcPayload): JsonRpcPayload
     decode?(error: Error | null, response?: JsonRpcResponse): [Error | null, JsonRpcResponse]
 }

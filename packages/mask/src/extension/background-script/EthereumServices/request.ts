@@ -1,15 +1,17 @@
 import type { RequestArguments } from 'web3-core'
-import type { RequestOptions, SendOverrides } from '@masknet/web3-shared-evm'
+import { ProviderType, RequestOptions, SendOverrides } from '@masknet/web3-shared-evm'
 import { currentChainIdSettings, currentProviderSettings } from '../../../plugins/Wallet/settings'
 import { createExternalProvider } from './provider'
 import { createContext, dispatch, use } from './composer'
 import { Logger } from './middlewares/Logger'
 import { Squash } from './middlewares/Squash'
-import { MaskWallet } from './middlewares/MaskWallet'
+import { Interceptor } from './middlewares/Interceptor'
+import { Translator } from './middlewares/Transaltor'
 
 use(new Logger())
 use(new Squash())
-use(new MaskWallet())
+use(new Translator())
+use(new Interceptor())
 
 export async function sendRequest<T extends unknown>(
     requestArguments: RequestArguments,
@@ -24,14 +26,14 @@ export async function sendRequest<T extends unknown>(
         await dispatch(context, async () => {
             try {
                 // create request provider
-                const externalProvider = await createExternalProvider(chainId, providerType)
+                const externalProvider = await createExternalProvider(chainId, ProviderType.MaskWallet)
                 if (!externalProvider?.request) throw new Error('Failed to create provider.')
 
                 // send request and set result in the context
                 const result = (await externalProvider?.request?.(requestArguments)) as T
-                context.write(null, result)
+                context.end(result)
             } catch (error) {
-                context.write(error instanceof Error ? error : new Error('Failed to send request.'))
+                context.abort(error, 'Failed to send request.')
             }
         })
 

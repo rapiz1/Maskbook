@@ -42,9 +42,9 @@ export class Squash implements Middleware<Context> {
         // write context with the cached response
         if (id && this.cache.has(id)) {
             try {
-                context.write(null, await this.cache.get(id))
+                context.end(await this.cache.get(id))
             } catch (error) {
-                context.write(error instanceof Error ? error : new Error('Failed to send request.'))
+                context.abort(error, 'Failed to send request.')
             }
             return
         }

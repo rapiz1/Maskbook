@@ -26,20 +26,15 @@ export function getPayloadTo(payload: JsonRpcPayload) {
 }
 
 export function getPayloadChainId(payload: JsonRpcPayload) {
-    switch (payload.method) {
-        // here are methods that contracts may emit
-        case EthereumMethodType.ETH_CALL:
-        case EthereumMethodType.ETH_ESTIMATE_GAS:
-        case EthereumMethodType.ETH_SEND_TRANSACTION:
-            const config = first(payload.params) as { chainId?: string } | undefined
-            return typeof config?.chainId === 'string' ? Number.parseInt(config.chainId, 16) || undefined : undefined
-        default:
-            return
-    }
+    const config = getPayloadConfig(payload)
+    return typeof config?.chainId === 'string' ? Number.parseInt(config.chainId, 16) || undefined : undefined
 }
 
 export function getPayloadConfig(payload: JsonRpcPayload) {
     switch (payload.method) {
+        case EthereumMethodType.ETH_CALL:
+        case EthereumMethodType.ETH_ESTIMATE_GAS:
+        case EthereumMethodType.ETH_SIGN_TRANSACTION:
         case EthereumMethodType.ETH_SEND_TRANSACTION: {
             const [config] = payload.params as [EthereumTransactionConfig]
             return config
