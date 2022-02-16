@@ -54,7 +54,7 @@ export class MaskWallet implements Middleware<Context> {
                         }),
                     )
                 } catch (error) {
-                    context.abort(error, 'Failed to send transation.')
+                    context.abort(error, 'Failed to send transaction.')
                 }
                 break
             case EthereumMethodType.PERSONAL_SIGN:

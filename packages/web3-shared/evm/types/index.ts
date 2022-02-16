@@ -394,7 +394,7 @@ export type EthereumTransactionConfig = TransactionConfig_ & {
 
     // CELO
     feeCurrency?: string // address of the ERC20 contract to use to pay for gas and the gateway fee
-    gatewayFeeRecipient?: string // coinbase address of the full serving the light client's trasactions
+    gatewayFeeRecipient?: string // coinbase address of the full serving the light client's transactions
     gatewayFee?: string // value paid to the gateway fee recipient, denominated in the fee currency
 }
 

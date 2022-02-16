@@ -46,7 +46,7 @@ export interface Context {
     readonly requestOptions: RequestOptions | undefined
 
     /**
-     * JSON RPC rquest payload
+     * JSON RPC request payload
      */
     readonly request: JsonRpcPayload
 

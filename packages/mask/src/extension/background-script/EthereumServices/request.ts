@@ -6,7 +6,7 @@ import { createContext, dispatch, use } from './composer'
 import { Logger } from './middlewares/Logger'
 import { Squash } from './middlewares/Squash'
 import { Interceptor } from './middlewares/Interceptor'
-import { Translator } from './middlewares/Transaltor'
+import { Translator } from './middlewares/Translator'
 
 use(new Logger())
 use(new Squash())

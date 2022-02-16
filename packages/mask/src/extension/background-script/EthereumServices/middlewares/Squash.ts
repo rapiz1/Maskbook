@@ -12,7 +12,7 @@ export class Squash implements Middleware<Context> {
     private cache = new Map<string, Promise<JsonRpcResponse | undefined>>()
 
     /**
-     * If it returns a cache id, existance means the request can be cached.
+     * If it returns a cache id, existence means the request can be cached.
      * @param requestArguments
      * @returns
      */
@@ -64,7 +64,7 @@ export class Squash implements Middleware<Context> {
                 clearTimeout(timer)
             })
 
-            // register repsonse callback
+            // register response callback
             context.onResponse((error, response) => {
                 if (error) reject(error)
                 else resolve(response)
