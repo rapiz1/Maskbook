@@ -1,5 +1,6 @@
-import type { TransactionConfig as TransactionConfig_ } from 'web3-core'
+import type { RequestArguments, TransactionConfig as TransactionConfig_ } from 'web3-core'
 import type { NonPayableTransactionObject, PayableTransactionObject } from '@masknet/web3-contracts/types/types'
+import type { JsonRpcPayload, JsonRpcResponse } from 'web3-core-helpers'
 
 export interface SendOverrides {
     chainId?: ChainId
@@ -9,6 +10,18 @@ export interface SendOverrides {
 
 export interface RequestOptions {
     popupsWindow?: boolean
+}
+
+export interface ExternalProvider {
+    request: <T>(requestArguments: RequestArguments) => Promise<T>
+    send?: (
+        payload: JsonRpcPayload,
+        callback: (error: Error | null, response?: JsonRpcResponse | undefined) => void,
+    ) => void
+    sendAsync: (
+        payload: JsonRpcPayload,
+        callback: (error: Error | null, response?: JsonRpcResponse | undefined) => void,
+    ) => void
 }
 
 export enum CurrencyType {

@@ -1,17 +1,15 @@
-import Web3 from 'web3'
 import type { RequestArguments } from 'web3-core'
 import { defer } from '@masknet/shared-base'
-import { createExternalProvider, EthereumMethodType } from '@masknet/web3-shared-evm'
+import { EthereumMethodType } from '@masknet/web3-shared-evm'
 import { EVM_Messages } from '../../../../plugins/EVM/messages'
+import { BaseProvider } from './Base'
 import type { Provider } from '../types'
 
-export class InjectedProvider implements Provider {
+export class InjectedProvider extends BaseProvider implements Provider {
     private id = 0
-    private web3: Web3 | null = null
 
-    private async request<T>(requestArguments: RequestArguments) {
-        this.id += 1
-        const requestId = this.id
+    override async request<T>(requestArguments: RequestArguments) {
+        const requestId = this.id++
         const [deferred, resolve, reject] = defer<T, Error | null>()
 
         function onResponse({ payload, result, error }: EVM_Messages['INJECTED_PROVIDER_RPC_RESPONSE']) {
@@ -40,17 +38,6 @@ export class InjectedProvider implements Provider {
         })
 
         return deferred
-    }
-
-    async createProvider() {
-        return createExternalProvider(this.request.bind(this))
-    }
-
-    async createWeb3() {
-        if (this.web3) return this.web3
-        const provider = await this.createProvider()
-        this.web3 = new Web3(provider)
-        return this.web3
     }
 
     async ensureConnectedAndUnlocked() {

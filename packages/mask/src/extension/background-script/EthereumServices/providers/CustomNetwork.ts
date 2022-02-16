@@ -1,9 +1,13 @@
 import type Web3 from 'web3'
-import { ChainId } from '@masknet/web3-shared-evm'
-import type { ExternalProvider, Provider } from '../types'
+import { ChainId, ExternalProvider } from '@masknet/web3-shared-evm'
+import type { Provider } from '../types'
+import type { RequestArguments } from 'web3-core'
 
 export class CustomNetworkProvider implements Provider {
-    createProvider(): Promise<ExternalProvider> {
+    request<T extends unknown>(requestArguments: RequestArguments): Promise<T> {
+        throw new Error('Method not implemented.')
+    }
+    createExternalProvider(): Promise<ExternalProvider> {
         throw new Error('Method not implemented.')
     }
     createWeb3(): Promise<Web3> {

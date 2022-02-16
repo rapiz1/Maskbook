@@ -1,57 +1,15 @@
 import Web3 from 'web3'
 import type { RequestArguments } from 'web3-core'
 import type { JsonRpcPayload, JsonRpcResponse } from 'web3-core-helpers'
-import { EthereumMethodType, RequestOptions, SendOverrides } from '../types'
-
-const cache = new Map<string, Promise<unknown>>()
-
-/**
- * If it returns a cache id, it means the request can be cached.
- * @param requestArguments
- * @returns
- */
-function getCacheId(requestArguments: RequestArguments, overrides?: SendOverrides) {
-    // The -1 is not a valid chain id, only used for distinguishing with other explicit chain id.
-    const chainId = overrides?.chainId ?? -1
-    const { method, params } = requestArguments
-    switch (method) {
-        case EthereumMethodType.ETH_GET_BALANCE:
-            const [account, tag = 'latest'] = params as string[]
-            return [chainId, method, account, tag].join('_')
-        case EthereumMethodType.ETH_BLOCK_NUMBER:
-            return [chainId, method].join('_')
-        default:
-            return
-    }
-}
-
-function createSquashedRequest<T>(
-    request: <T>(requestArguments: RequestArguments, overrides?: SendOverrides, options?: RequestOptions) => Promise<T>,
-) {
-    return async <T>(requestArguments: RequestArguments, overrides?: SendOverrides, options?: RequestOptions) => {
-        const id = getCacheId(requestArguments, overrides)
-
-        // the request cannot be cached
-        if (!id) return request<T>(requestArguments, overrides, options)
-
-        // the request is already cached
-        if (cache.has(id)) return cache.get(id) as Promise<T>
-
-        // the request can be cached
-        const unresolved = request<T>(requestArguments, overrides, options).finally(() => cache.delete(id))
-        cache.set(id, unresolved)
-        return unresolved
-    }
-}
+import type { RequestOptions, SendOverrides, ExternalProvider } from '../types'
 
 export function createExternalProvider(
     request: <T>(requestArguments: RequestArguments, overrides?: SendOverrides, options?: RequestOptions) => Promise<T>,
     getOverrides?: () => SendOverrides,
     getOptions?: () => RequestOptions,
-) {
-    const request_ = createSquashedRequest(request)
+): ExternalProvider {
     const send = (payload: JsonRpcPayload, callback: (error: Error | null, response?: JsonRpcResponse) => void) => {
-        request_(
+        request(
             {
                 method: payload.method,
                 params: payload.params,
@@ -74,7 +32,7 @@ export function createExternalProvider(
 
     return {
         request: <T>(requestArguments: RequestArguments) =>
-            request_<T>(requestArguments, getOverrides?.(), getOptions?.()),
+            request<T>(requestArguments, getOverrides?.(), getOptions?.()),
         send,
         sendAsync: send,
     }

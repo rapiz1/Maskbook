@@ -1,7 +1,7 @@
 import type Web3 from 'web3'
-import type { RequestArguments } from 'web3-core'
+import type { HttpProvider, RequestArguments } from 'web3-core'
 import type { JsonRpcPayload, JsonRpcResponse } from 'web3-core-helpers'
-import type { ChainId, SendOverrides, RequestOptions } from '@masknet/web3-shared-evm'
+import type { ChainId, SendOverrides, RequestOptions, ExternalProvider } from '@masknet/web3-shared-evm'
 
 export interface ProviderOptions {
     chainId?: ChainId
@@ -14,8 +14,11 @@ export interface Web3Options {
 }
 
 export interface Provider {
-    createProvider(options?: ProviderOptions): Promise<ExternalProvider>
+    request<T extends unknown>(requestArguments: RequestArguments): Promise<T>
+
     createWeb3(options?: Web3Options): Promise<Web3>
+    createProvider?(options?: ProviderOptions): Promise<HttpProvider>
+    createExternalProvider(options?: ProviderOptions): Promise<ExternalProvider>
 
     requestAccounts?(chainId?: ChainId): Promise<{
         chainId: ChainId
@@ -46,16 +49,4 @@ export interface Middleware<T> {
 export interface Interceptor {
     encode?(payload: JsonRpcPayload): JsonRpcPayload
     decode?(error: Error | null, response?: JsonRpcResponse): [Error | null, JsonRpcResponse]
-}
-
-export interface ExternalProvider {
-    request?: <T>(requestArguments: RequestArguments) => Promise<T>
-    send?: (
-        payload: JsonRpcPayload,
-        callback: (error: Error | null, response?: JsonRpcResponse | undefined) => void,
-    ) => void
-    sendAsync?: (
-        payload: JsonRpcPayload,
-        callback: (error: Error | null, response?: JsonRpcResponse | undefined) => void,
-    ) => void
 }

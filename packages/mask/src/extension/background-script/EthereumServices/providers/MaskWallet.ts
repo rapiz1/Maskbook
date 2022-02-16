@@ -1,14 +1,26 @@
 import Web3 from 'web3'
-import type { HttpProvider } from 'web3-core'
 import { PopupRoutes } from '@masknet/shared-base'
-import { ChainId, getChainRPC, ProviderType } from '@masknet/web3-shared-evm'
-import { currentChainIdSettings } from '../../../../plugins/Wallet/settings'
+import {
+    ChainId,
+    createExternalProvider,
+    createPayload,
+    getChainRPC,
+    getRPCConstants,
+    ProviderType,
+} from '@masknet/web3-shared-evm'
+import type { HttpProvider, RequestArguments } from 'web3-core'
 import { getWallets, selectAccountPrepare } from '../../../../plugins/Wallet/services'
 import { openPopupWindow } from '../../HelperService'
+import { BaseProvider } from './Base'
 import type { Provider, ProviderOptions, Web3Options } from '../types'
+import { currentChainIdSettings } from '../../../../plugins/Wallet/settings'
+import type { JsonRpcResponse } from 'web3-core-helpers'
 
-export class MaskWalletProvider implements Provider {
-    private seed = Math.floor(Math.random() * 4)
+const WEIGHTS_LENGTH = getRPCConstants(ChainId.Mainnet).RPC_WEIGHTS?.length ?? 4
+
+export class MaskWalletProvider extends BaseProvider implements Provider {
+    private id = 0
+    private seed = Math.floor(Math.random() * WEIGHTS_LENGTH)
     private providerPool = new Map<string, HttpProvider>()
     private instancePool = new Map<string, Web3>()
 
@@ -43,15 +55,7 @@ export class MaskWalletProvider implements Provider {
         return newInstance
     }
 
-    async createProvider({ chainId, url }: ProviderOptions) {
-        url = url ?? getChainRPC(chainId ?? currentChainIdSettings.value, this.seed)
-        if (!url) throw new Error('Failed to create provider.')
-
-        const provider = this.createProviderInstance(url)
-        return provider
-    }
-
-    async createWeb3({ keys = [], options = {} }: Web3Options) {
+    override async createWeb3({ keys = [], options = {} }: Web3Options = {}) {
         const provider = await this.createProvider(options)
         const web3 = this.createWeb3Instance(provider)
         if (keys.length) {
@@ -61,14 +65,37 @@ export class MaskWalletProvider implements Provider {
         return web3
     }
 
+    async createProvider({ chainId, url }: ProviderOptions = {}) {
+        url = url ?? getChainRPC(chainId ?? currentChainIdSettings.value, this.seed)
+        if (!url) throw new Error('Failed to create provider.')
+        return this.createProviderInstance(url)
+    }
+
+    override async createExternalProvider(options?: ProviderOptions) {
+        const provider = await this.createProvider(options)
+        const request = <T extends unknown>(requestArguments: RequestArguments) => {
+            return new Promise<T>((resolve, reject) => {
+                const requestId = this.id++
+                provider?.send(
+                    createPayload(requestId, requestArguments.method, requestArguments.params),
+                    (error: Error | null, response?: JsonRpcResponse) => {
+                        if (error) reject(error)
+                        else resolve(response?.result as T)
+                    },
+                )
+            })
+        }
+        return createExternalProvider(request)
+    }
+
     async requestAccounts(chainId?: ChainId) {
         return new Promise<{
             chainId: ChainId
             accounts: string[]
         }>(async (resolve, reject) => {
-            const wallets = await getWallets(ProviderType.MaskWallet)
-
             try {
+                const wallets = await getWallets(ProviderType.MaskWallet)
+
                 await selectAccountPrepare((accounts, chainId) => {
                     resolve({
                         chainId,

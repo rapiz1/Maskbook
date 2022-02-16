@@ -1,24 +1,17 @@
-import Web3 from 'web3'
 import type { JsonRpcResponse } from 'web3-core-helpers'
 import { first } from 'lodash-unified'
 import WalletConnect from '@walletconnect/client'
 import type { IJsonRpcRequest } from '@walletconnect/types'
-import {
-    ProviderType,
-    ChainId,
-    EthereumMethodType,
-    createExternalProvider,
-    createPayload,
-} from '@masknet/web3-shared-evm'
+import { ProviderType, ChainId, EthereumMethodType, createPayload } from '@masknet/web3-shared-evm'
 import { resetAccount, updateAccount } from '../../../../plugins/Wallet/services'
 import { currentProviderSettings } from '../../../../plugins/Wallet/settings'
-import type { Provider } from '../types'
 import type { RequestArguments } from 'web3-core'
+import { BaseProvider } from './Base'
+import type { Provider } from '../types'
 
-export class WalletConnectProvider implements Provider {
+export class WalletConnectProvider extends BaseProvider implements Provider {
     private id = 0
     private connector: WalletConnect | null = null
-    private web3: Web3 | null = null
 
     private async signPersonalMessage(data: string, address: string, password: string) {
         if (!this.connector) throw new Error('Connection Lost.')
@@ -35,10 +28,8 @@ export class WalletConnectProvider implements Provider {
         return (await this.connector.signTypedData([data, address])) as string
     }
 
-    private async request<T>(requestArguments: RequestArguments) {
-        this.id += 1
-
-        const requestId = this.id
+    override async request<T>(requestArguments: RequestArguments) {
+        const requestId = this.id++
         const { method, params } = requestArguments
 
         switch (method) {
@@ -113,17 +104,6 @@ export class WalletConnectProvider implements Provider {
         await resetAccount({
             providerType: ProviderType.WalletConnect,
         })
-    }
-
-    async createProvider() {
-        return createExternalProvider(this.request.bind(this))
-    }
-
-    async createWeb3(): Promise<Web3> {
-        if (this.web3) return this.web3
-        const provider = await this.createProvider()
-        this.web3 = new Web3(provider)
-        return this.web3
     }
 
     async requestAccounts() {

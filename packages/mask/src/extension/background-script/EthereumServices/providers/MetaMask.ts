@@ -1,5 +1,4 @@
-import Web3 from 'web3'
-import type { HttpProvider } from 'web3-core'
+import type { RequestArguments } from 'web3-core'
 import { first } from 'lodash-unified'
 import createMetaMaskProvider, { MetaMaskInpageProvider } from '@dimensiondev/metamask-extension-provider'
 import { ChainId, ProviderType } from '@masknet/web3-shared-evm'
@@ -7,11 +6,30 @@ import { delay } from '@masknet/shared-base'
 import { updateAccount } from '../../../../plugins/Wallet/services'
 import { currentChainIdSettings, currentProviderSettings } from '../../../../plugins/Wallet/settings'
 import { replaceRecentTransaction } from '../../../../plugins/Wallet/services/transaction/database'
-import type { ExternalProvider, Provider } from '../types'
+import { BaseProvider } from './Base'
+import type { Provider } from '../types'
 
-export class MetaMaskProvider implements Provider {
+export class MetaMaskProvider extends BaseProvider implements Provider {
     private provider: MetaMaskInpageProvider | null = null
-    private web3: Web3 | null = null
+
+    private async createProviderInstance() {
+        // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
+        if (this.provider && this.provider.chainId !== null) return this.provider
+        this.provider = createMetaMaskProvider()
+
+        // wait for building the connection
+        await delay(1000)
+
+        if (!this.provider || this.provider.chainId === null) {
+            this.provider = null
+            throw new Error('Unable to create provider.')
+        }
+
+        this.provider.on('accountsChanged', this.onAccountsChanged as (...args: unknown[]) => void)
+        this.provider.on('chainChanged', this.onChainIdChanged as (...args: unknown[]) => void)
+        this.provider.on('message', this.onMessage as (...args: unknown[]) => void)
+        return this.provider
+    }
 
     async onMessage(message: {
         type: 'tx_replacement'
@@ -52,31 +70,9 @@ export class MetaMaskProvider implements Provider {
         })
     }
 
-    async createProvider() {
-        // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
-        if (this.provider && this.provider.chainId !== null) return this.provider as unknown as ExternalProvider
-        this.provider = createMetaMaskProvider()
-
-        // wait for building the connection
-        await delay(1000)
-
-        if (!this.provider || this.provider.chainId === null) {
-            this.provider = null
-            throw new Error('Unable to create provider.')
-        }
-
-        this.provider.on('accountsChanged', this.onAccountsChanged as (...args: unknown[]) => void)
-        this.provider.on('chainChanged', this.onChainIdChanged as (...args: unknown[]) => void)
-        this.provider.on('message', this.onMessage as (...args: unknown[]) => void)
-        return this.provider as unknown as ExternalProvider
-    }
-
-    async createWeb3() {
-        if (this.web3) return this.web3
-
-        const provider = await this.createProvider()
-        this.web3 = new Web3(provider as unknown as HttpProvider)
-        return this.web3
+    override async request<T extends unknown>(requestArguments: RequestArguments): Promise<T> {
+        const instance = await this.createProviderInstance()
+        return instance.request?.(requestArguments) as Promise<T>
     }
 
     async ensureConnectedAndUnlocked() {

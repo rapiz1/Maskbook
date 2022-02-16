@@ -1,19 +1,16 @@
-import Web3 from 'web3'
 import type { RequestArguments } from 'web3-core'
 import { defer } from '@masknet/shared-base'
-import { ChainId, createExternalProvider, EthereumMethodType } from '@masknet/web3-shared-evm'
+import { ChainId, EthereumMethodType } from '@masknet/web3-shared-evm'
 import { EVM_Messages } from '../../../../plugins/EVM/messages'
 import { resetAccount } from '../../../../plugins/Wallet/services'
+import { BaseProvider } from './Base'
 import type { Provider } from '../types'
 
-export class FortmaticProvider implements Provider {
+export class FortmaticProvider extends BaseProvider implements Provider {
     private id = 0
-    private web3: Web3 | null = null
 
-    private async request<T>(requestArguments: RequestArguments) {
-        this.id += 1
-
-        const requestId = this.id
+    override async request<T>(requestArguments: RequestArguments) {
+        const requestId = this.id++
         const [deferred, resolve, reject] = defer<T, Error | null>()
 
         function onResponse({ payload, result, error }: EVM_Messages['FORTMATIC_PROVIDER_RPC_RESPONSE']) {
@@ -44,17 +41,8 @@ export class FortmaticProvider implements Provider {
         return deferred
     }
 
-    async createProvider() {
-        return createExternalProvider(this.request.bind(this))
-    }
-    async createWeb3() {
-        if (this.web3) return this.web3
-        const provider = await this.createProvider()
-        this.web3 = new Web3(provider)
-        return this.web3
-    }
     async requestAccounts(chainId = ChainId.Mainnet) {
-        const provider = await this.createProvider()
+        const provider = await this.createExternalProvider()
         return provider.request<{
             chainId: ChainId
             accounts: string[]
@@ -63,8 +51,9 @@ export class FortmaticProvider implements Provider {
             params: [chainId],
         })
     }
+
     async dismissAccounts(chainId = ChainId.Mainnet) {
-        const provider = await this.createProvider()
+        const provider = await this.createExternalProvider()
         await provider.request({
             method: EthereumMethodType.MASK_LOGOUT_FORTMATIC,
             params: [chainId],

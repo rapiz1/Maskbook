@@ -40,13 +40,13 @@ export function createWeb3(
     )
 }
 
-export function createProvider(
+export function createExternalProvider(
     chainId = currentChainIdSettings.value,
     providerType = currentProviderSettings.value,
     url?: string,
 ) {
     const provider = getProvider(providerType)
-    return provider?.createProvider({ chainId, url })
+    return provider?.createExternalProvider({ chainId, url })
 }
 
 export async function connect({
