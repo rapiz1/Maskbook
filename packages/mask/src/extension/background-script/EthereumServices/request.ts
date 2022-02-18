@@ -5,11 +5,13 @@ import { createExternalProvider } from './provider'
 import { createContext, dispatch, use } from './composer'
 import { Logger } from './middlewares/Logger'
 import { Squash } from './middlewares/Squash'
+import { Nonce } from './middlewares/Nonce'
 import { Interceptor } from './middlewares/Interceptor'
 import { Translator } from './middlewares/Translator'
 
 use(new Logger())
 use(new Squash())
+use(new Nonce())
 use(new Translator())
 use(new Interceptor())
 

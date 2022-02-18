@@ -8,6 +8,7 @@ import type {
     ExternalProvider,
     ProviderType,
     EthereumTransactionConfig,
+    EthereumMethodType,
 } from '@masknet/web3-shared-evm'
 
 export interface ProviderOptions {
@@ -41,6 +42,7 @@ export interface Context {
     readonly account: string
     readonly chainId: ChainId
     readonly providerType: ProviderType
+    readonly method: EthereumMethodType
     readonly config: EthereumTransactionConfig | undefined
     readonly sendOverrides: SendOverrides | undefined
     readonly requestOptions: RequestOptions | undefined

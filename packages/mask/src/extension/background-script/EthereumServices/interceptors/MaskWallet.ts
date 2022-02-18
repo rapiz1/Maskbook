@@ -1,8 +1,7 @@
 import { toBuffer } from 'ethereumjs-util'
 import { signTypedData, SignTypedDataVersion } from '@metamask/eth-sig-util'
-import { ChainId, EthereumMethodType, getPayloadConfig } from '@masknet/web3-shared-evm'
+import { ChainId, EthereumMethodType } from '@masknet/web3-shared-evm'
 import type { Context, Middleware } from '../types'
-import { getNonce } from '../nonce'
 import { WalletRPC } from '../../../../plugins/Wallet/messages'
 import { MaskWalletProvider } from '../providers/MaskWallet'
 
@@ -33,9 +32,6 @@ export class MaskWallet implements Middleware<Context> {
                     context.abort(new Error('Invalid JSON payload.'))
                     return
                 }
-
-                // add nonce
-                if (!config.nonce) config.nonce = await getNonce(config.from as string)
 
                 try {
                     const key = await this.getPrivateKey(config.from as string)

@@ -7,6 +7,7 @@ import {
     RequestOptions,
     SendOverrides,
     ProviderType,
+    EthereumMethodType,
 } from '@masknet/web3-shared-evm'
 import type { RequestArguments } from 'web3-core'
 import type { JsonRpcResponse } from 'web3-core-helpers'
@@ -88,6 +89,10 @@ class RequestContext implements Context {
 
     get providerType() {
         return this.sendOverrides?.providerType ?? this.rawProviderType
+    }
+
+    get method() {
+        return this.request.method as EthereumMethodType
     }
 
     get config() {
