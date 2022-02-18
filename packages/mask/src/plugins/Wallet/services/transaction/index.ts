@@ -3,11 +3,9 @@ import type { JsonRpcPayload } from 'web3-core-helpers'
 import type { ChainId, TransactionStatusType } from '@masknet/web3-shared-evm'
 import { getSendTransactionComputedPayload } from '../../../../extension/background-script/EthereumService'
 import * as database from './database'
-import * as watcher from './watcher'
 import * as helpers from './helpers'
 
 export * from './progress'
-export * from './watcher'
 
 export interface RecentTransactionOptions {
     status?: TransactionStatusType
@@ -18,11 +16,10 @@ export interface RecentTransactionOptions {
 export interface RecentTransaction {
     at: Date
     hash: string
-    hashReplacement?: string
     status: TransactionStatusType
     receipt?: TransactionReceipt | null
     payload?: JsonRpcPayload
-    payloadReplacement?: JsonRpcPayload
+    replacements?: Record<string, JsonRpcPayload>
     computedPayload?: UnboxPromise<ReturnType<typeof getSendTransactionComputedPayload>>
 }
 
@@ -71,13 +68,13 @@ export async function getRecentTransactions(
                     (await watcher.getReceipt(chainId, hash)) ||
                     (await (hashReplacement ? watcher.getReceipt(chainId, hashReplacement) : null))
 
-                // if it cannot found receipt, then start the watching progress
-                // in case the user just refreshed the background page
-                if (!receipt) {
-                    watcher.watchTransaction(chainId, hash, payload)
-                    if (hashReplacement && payloadReplacement)
-                        watcher.watchTransaction(chainId, hashReplacement, payloadReplacement)
-                }
+                // // if it cannot found receipt, then start the watching progress
+                // // in case the user just refreshed the background page
+                // if (!receipt) {
+                //     watcher.watchTransaction(chainId, hash, payload)
+                //     if (hashReplacement && payloadReplacement)
+                //         watcher.watchTransaction(chainId, hashReplacement, payloadReplacement)
+                // }
 
                 const tx: RecentTransaction = {
                     at,

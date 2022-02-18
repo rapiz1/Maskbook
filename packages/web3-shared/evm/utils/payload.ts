@@ -66,11 +66,3 @@ export function getPayloadNonce(payload: JsonRpcPayload) {
     const config = getPayloadConfig(payload)
     return config?.nonce
 }
-
-export function getTransactionHash(response?: JsonRpcResponse) {
-    if (!response) return ''
-    const hash = response?.result as string | undefined
-    if (typeof hash !== 'string') return ''
-    if (!/^0x([\dA-Fa-f]{64})$/.test(hash)) return ''
-    return hash
-}

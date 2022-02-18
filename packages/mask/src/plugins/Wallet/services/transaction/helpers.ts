@@ -71,22 +71,6 @@ export function getReceiptStatus(receipt: TransactionReceipt | null) {
     return TransactionStatusType.NOT_DEPEND
 }
 
-export function getTransactionHash(state?: TransactionState) {
-    if (!state) return ''
-    switch (state?.type) {
-        case TransactionStateType.HASH:
-            return state.hash
-        case TransactionStateType.RECEIPT:
-            return state.receipt.transactionHash
-        case TransactionStateType.CONFIRMED:
-            return state.receipt.transactionHash
-        case TransactionStateType.FAILED:
-            return state.receipt?.transactionHash ?? ''
-        default:
-            return ''
-    }
-}
-
 export function getTransactionState(receipt: TransactionReceipt): TransactionState {
     if (receipt.blockNumber) {
         const status = getReceiptStatus(receipt)

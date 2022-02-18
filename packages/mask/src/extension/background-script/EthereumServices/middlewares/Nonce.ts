@@ -140,6 +140,6 @@ export class Nonce implements Middleware<Context> {
         const isAuroraErrorNonce = message.includes('ERR_INCORRECT_NONCE')
 
         if (isGeneralErrorNonce || isAuroraErrorNonce) await this.resetNonce(context.account)
-        else if (!context.error) await this.commitNonce(context.account)
+        else if (!context.error && typeof context.result === 'string') await this.commitNonce(context.account)
     }
 }
